@@ -10,6 +10,7 @@ import (
 
 const domain string = "http://bnm.md/"
 const endpoint string = "/official_exchange_rates?get_xml=1&date="
+const dateFormat string = "02.01.2006"
 
 // Rates parent node
 type Rates struct {
@@ -34,13 +35,35 @@ type Rate struct {
 }
 
 func buildURL(lang string, time time.Time) string {
-	return domain + lang + endpoint + time.Format("02.01.2006")
+	return domain + lang + endpoint + time.Format(dateFormat)
+}
+
+func fetchURL(url string) ([]byte, error) {
+	res, err := http.Get(buildURL("en", time.Now()))
+
+	if err != nil {
+		return []byte{}, err
+	}
+
+	defer res.Body.Close()
+
+	return ioutil.ReadAll(res.Body)
+}
+
+func parseXML(bytes []byte) (Rates, error) {
+	var rates Rates
+	err := xml.Unmarshal(bytes, &rates)
+
+	if err != nil {
+		return Rates{}, err
+	}
+
+	return rates, err
 }
 
 func main() {
-	var rates Rates
-	res, _ := http.Get(buildURL("en", time.Now()))
-	bytes, _ := ioutil.ReadAll(res.Body)
-	xml.Unmarshal(bytes, &rates)
+	res, _ := fetchURL(buildURL("en", time.Now()))
+	rates, _ := parseXML(res)
+
 	fmt.Println(rates.Map())
 }
