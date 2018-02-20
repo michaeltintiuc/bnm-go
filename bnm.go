@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -35,7 +36,17 @@ type Rate struct {
 }
 
 func buildURL(lang string, time time.Time) string {
+	lang = strings.ToLower(lang)
+	validateLang(lang)
 	return domain + lang + endpoint + time.Format(dateFormat)
+}
+
+func validateLang(lang string) {
+	switch lang {
+	case "en", "ru", "ro", "md":
+		return
+	}
+	panic("Invalid language. Supported languages: en, ru, ro, md")
 }
 
 func fetchURL(url string) ([]byte, error) {
