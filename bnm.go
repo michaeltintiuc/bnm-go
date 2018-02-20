@@ -54,7 +54,7 @@ func validateLang(lang string) {
 
 // getXML
 // Fetch data from a cache file or
-// Send new request and cache responseV
+// Send new request and cache response
 func getXML() ([]byte, error) {
 	date := time.Now().Format(dateFormat)
 	tmp := os.TempDir() + "/bnm-go-" + date
