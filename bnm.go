@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 )
@@ -12,6 +13,8 @@ import (
 const domain string = "http://bnm.md/"
 const endpoint string = "/official_exchange_rates?get_xml=1&date="
 const dateFormat string = "02.01.2006"
+
+var cache = true
 
 // Rates parent node
 type Rates struct {
@@ -35,10 +38,10 @@ type Rate struct {
 	Value    float32 `xml:"Value"`
 }
 
-func buildURL(lang string, time time.Time) string {
+func buildURL(lang, date string) string {
 	lang = strings.ToLower(lang)
 	validateLang(lang)
-	return domain + lang + endpoint + time.Format(dateFormat)
+	return domain + lang + endpoint + date
 }
 
 func validateLang(lang string) {
@@ -49,8 +52,35 @@ func validateLang(lang string) {
 	panic("Invalid language. Supported languages: en, ru, ro, md")
 }
 
+// getXML
+// Fetch data from a cache file or
+// Send new request and cache responseV
+func getXML() ([]byte, error) {
+	date := time.Now().Format(dateFormat)
+	tmp := os.TempDir() + "/bnm-go-" + date
+
+	if _, err := os.Stat(tmp); os.IsNotExist(err) {
+		fmt.Printf(">Cache file %s doesn't exist\n", tmp)
+		xml, err := fetchURL(buildURL("en", date))
+
+		if err != nil {
+			fmt.Println(">Failed to fetch data", err)
+			return []byte{}, err
+		}
+
+		err = ioutil.WriteFile(tmp, xml, 0664)
+		if err != nil {
+			fmt.Printf(">Failed to write to %s\n>%s\n", tmp, err)
+		}
+		return xml, err
+	}
+
+	fmt.Printf(">Reading from %s\n", tmp)
+	return ioutil.ReadFile(tmp)
+}
+
 func fetchURL(url string) ([]byte, error) {
-	res, err := http.Get(buildURL("en", time.Now()))
+	res, err := http.Get(url)
 
 	if err != nil {
 		return []byte{}, err
@@ -73,8 +103,8 @@ func parseXML(bytes []byte) (Rates, error) {
 }
 
 func main() {
-	res, _ := fetchURL(buildURL("en", time.Now()))
-	rates, _ := parseXML(res)
+	xml, _ := getXML()
+	rates, _ := parseXML(xml)
 
 	fmt.Println(rates.Map())
 }
