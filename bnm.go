@@ -17,15 +17,10 @@ type Rates struct {
 }
 
 // Map convert rates slices to a map
-func (r Rates) Map() map[string]RatesMap {
-	ratesMap := make(map[string]RatesMap)
+func (r Rates) Map() map[string]Rate {
+	ratesMap := make(map[string]Rate)
 	for i := range r.Rates {
-		ratesMap[r.Rates[i].CharCode] = RatesMap{
-			r.Rates[i].NumCode,
-			r.Rates[i].CharCode,
-			r.Rates[i].Name,
-			r.Rates[i].Value,
-		}
+		ratesMap[r.Rates[i].CharCode] = r.Rates[i]
 	}
 	return ratesMap
 }
@@ -36,14 +31,6 @@ type Rate struct {
 	CharCode string  `xml:"CharCode"`
 	Name     string  `xml:"Name"`
 	Value    float32 `xml:"Value"`
-}
-
-// RatesMap for export
-type RatesMap struct {
-	NumCode  string
-	CharCode string
-	Name     string
-	Value    float32
 }
 
 func buildURL(lang string, time time.Time) string {
