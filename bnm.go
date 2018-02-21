@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/xml"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -10,11 +11,15 @@ import (
 	"time"
 )
 
-const domain string = "http://bnm.md/"
-const endpoint string = "/official_exchange_rates?get_xml=1&date="
-const dateFormat string = "02.01.2006"
+const (
+	domain     string = "http://bnm.md/"
+	endpoint   string = "/official_exchange_rates?get_xml=1&date="
+	dateFormat string = "02.01.2006"
+)
 
-var cache = true
+var (
+	date, lang string
+)
 
 // Rates parent node
 type Rates struct {
@@ -38,30 +43,19 @@ type Rate struct {
 	Value    float32 `xml:"Value"`
 }
 
-func buildURL(lang, date string) string {
-	lang = strings.ToLower(lang)
-	validateLang(lang)
+func buildURL() string {
 	return domain + lang + endpoint + date
-}
-
-func validateLang(lang string) {
-	switch lang {
-	case "en", "ru", "ro", "md":
-		return
-	}
-	panic("Invalid language. Supported languages: en, ru, ro, md")
 }
 
 // getXML
 // Fetch data from a cache file or
 // Send new request and cache response
 func getXML() ([]byte, error) {
-	date := time.Now().Format(dateFormat)
-	tmp := os.TempDir() + "/bnm-go-" + date
+	tmp := fmt.Sprintf("%s/%s-%s-%s", os.TempDir(), "bnm-go", lang, date)
 
 	if _, err := os.Stat(tmp); os.IsNotExist(err) {
 		fmt.Printf(">Cache file %s doesn't exist\n", tmp)
-		xml, err := fetchURL(buildURL("en", date))
+		xml, err := fetchURL(buildURL())
 
 		if err != nil {
 			fmt.Println(">Failed to fetch data", err)
@@ -102,7 +96,26 @@ func parseXML(bytes []byte) (Rates, error) {
 	return rates, err
 }
 
+func validateFlags() {
+	lang = strings.ToLower(lang)
+	switch lang {
+	case "en", "ru", "ro", "md":
+	default:
+		fmt.Fprintf(os.Stderr, "Invalid language \"%s\" provided\n", lang)
+		flag.PrintDefaults()
+		os.Exit(1)
+	}
+}
+
+func init() {
+	flag.StringVar(&date, "d", time.Now().Format(dateFormat), "Date format: dd.mm.yyy")
+	flag.StringVar(&lang, "l", "en", "Language: {en|md|ro|ru}")
+}
+
 func main() {
+	flag.Parse()
+	validateFlags()
+
 	xml, _ := getXML()
 	rates, _ := parseXML(xml)
 
