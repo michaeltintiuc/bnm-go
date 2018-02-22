@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -18,6 +19,8 @@ const (
 )
 
 var (
+	wg         sync.WaitGroup
+	mu         sync.Mutex
 	date, lang string
 	currencies = currencySlice{"USD"}
 )
@@ -35,7 +38,9 @@ func (c *currencySlice) Contains(needle string) bool {
 
 func (c *currencySlice) Set(value string) error {
 	for _, currency := range strings.Split(value, ",") {
-		*c = append(*c, strings.ToUpper(currency))
+		if currency != "" {
+			*c = append(*c, strings.ToUpper(currency))
+		}
 	}
 	return nil
 }
@@ -65,23 +70,36 @@ func getXML() ([]byte, error) {
 	tmp := fmt.Sprintf("%s/%s-%s-%s", os.TempDir(), "bnm-go", lang, date)
 
 	if _, err := os.Stat(tmp); os.IsNotExist(err) {
-		fmt.Printf(">Cache file %s doesn't exist\n", tmp)
+		// fmt.Printf(">Cache file %s doesn't exist\n", tmp)
 		xml, err := fetchURL(buildURL())
 
 		if err != nil {
-			fmt.Println(">Failed to fetch data", err)
-			return []byte{}, err
+			fmt.Printf(">Failed to fetch data\n>%s\n", err)
+		} else {
+			wg.Add(1)
+			go cacheXML(tmp, xml)
+			wg.Wait()
 		}
 
-		err = ioutil.WriteFile(tmp, xml, 0664)
-		if err != nil {
-			fmt.Printf(">Failed to write to %s\n>%s\n", tmp, err)
-		}
 		return xml, err
 	}
 
-	fmt.Printf(">Reading from %s\n", tmp)
+	// fmt.Printf(">Reading from %s\n", tmp)
 	return ioutil.ReadFile(tmp)
+}
+
+func cacheXML(path string, xml []byte) error {
+	mu.Lock()
+	err := ioutil.WriteFile(path, xml, 0664)
+
+	if err != nil {
+		fmt.Printf(">Failed to write to %s\n>%s\n", path, err)
+	}
+
+	defer wg.Done()
+	defer mu.Unlock()
+
+	return err
 }
 
 func fetchURL(url string) ([]byte, error) {
