@@ -19,28 +19,39 @@ const (
 
 var (
 	date, lang string
+	currencies = currencySlice{"USD"}
 )
 
-// Rates parent node
-type Rates struct {
-	Rates []Rate `xml:"Valute"`
-}
+type currencySlice []string
 
-// Map convert rates slices to a map
-func (r Rates) Map() map[string]Rate {
-	ratesMap := make(map[string]Rate)
-	for i := range r.Rates {
-		ratesMap[r.Rates[i].CharCode] = r.Rates[i]
+func (c *currencySlice) Contains(needle string) bool {
+	for _, value := range *c {
+		if needle == value {
+			return true
+		}
 	}
-	return ratesMap
+	return false
 }
 
-// Rate child node
-type Rate struct {
-	NumCode  string  `xml:"NumCode"`
-	CharCode string  `xml:"CharCode"`
-	Name     string  `xml:"Name"`
-	Value    float32 `xml:"Value"`
+func (c *currencySlice) Set(value string) error {
+	for _, currency := range strings.Split(value, ",") {
+		*c = append(*c, strings.ToUpper(currency))
+	}
+	return nil
+}
+
+func (c *currencySlice) String() string {
+	return fmt.Sprint(*c)
+}
+
+// Rates maps XML structure
+type Rates struct {
+	Rates []struct {
+		NumCode  string  `xml:"NumCode"`
+		CharCode string  `xml:"CharCode"`
+		Name     string  `xml:"Name"`
+		Value    float32 `xml:"Value"`
+	} `xml:"Valute"`
 }
 
 func buildURL() string {
@@ -110,6 +121,7 @@ func validateFlags() {
 func init() {
 	flag.StringVar(&date, "d", time.Now().Format(dateFormat), "Date format: dd.mm.yyy")
 	flag.StringVar(&lang, "l", "en", "Language: {en|md|ro|ru}")
+	flag.Var(&currencies, "c", "Comma separated list of currencies to display")
 }
 
 func main() {
@@ -119,5 +131,9 @@ func main() {
 	xml, _ := getXML()
 	rates, _ := parseXML(xml)
 
-	fmt.Println(rates.Map())
+	for _, r := range rates.Rates {
+		if currencies.Contains(r.CharCode) {
+			fmt.Println(r.CharCode, r.Value)
+		}
+	}
 }
