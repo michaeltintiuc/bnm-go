@@ -3,5 +3,8 @@ Fetch official currency rates from the National Bank of Moldova
 
 ## TODO:
 - [X] Caching
-- [ ] Argument parsing (date, currency, calculate rates)
-- [ ] Convert to other formats (JSON, YAML, etc)
+- [X] Argument parsing (date, currency)
+- [ ] Currency conversion
+- [ ] Tests
+- [ ] Docs
+- [ ] A better README
