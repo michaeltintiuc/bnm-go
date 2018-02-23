@@ -19,10 +19,11 @@ const (
 )
 
 var (
-	wg         sync.WaitGroup
-	mu         sync.Mutex
-	date, lang string
-	currencies = currencySlice{"USD"}
+	wg             sync.WaitGroup
+	mu             sync.Mutex
+	date, lang     string
+	verbose, fresh bool
+	currencies     = currencySlice{"USD"}
 )
 
 type currencySlice []string
@@ -69,8 +70,15 @@ func buildURL() string {
 func getXML() ([]byte, error) {
 	tmp := fmt.Sprintf("%s/%s-%s-%s", os.TempDir(), "bnm-go", lang, date)
 
-	if _, err := os.Stat(tmp); os.IsNotExist(err) {
-		// fmt.Printf(">Cache file %s doesn't exist\n", tmp)
+	if _, err := os.Stat(tmp); os.IsNotExist(err) || fresh {
+		if verbose {
+			if fresh {
+				fmt.Printf(">Skipping reading cache file %s\n", tmp)
+			} else {
+				fmt.Printf(">Cache file %s doesn't exist\n", tmp)
+			}
+		}
+
 		xml, err := fetchURL(buildURL())
 
 		if err != nil {
@@ -84,7 +92,10 @@ func getXML() ([]byte, error) {
 		return xml, err
 	}
 
-	// fmt.Printf(">Reading from %s\n", tmp)
+	if verbose {
+		fmt.Printf(">Reading from cache file %s\n", tmp)
+	}
+
 	return ioutil.ReadFile(tmp)
 }
 
@@ -93,7 +104,9 @@ func cacheXML(path string, xml []byte) error {
 	err := ioutil.WriteFile(path, xml, 0664)
 
 	if err != nil {
-		fmt.Printf(">Failed to write to %s\n>%s\n", path, err)
+		fmt.Printf(">Failed to write cache to %s\n>%s\n", path, err)
+	} else if verbose {
+		fmt.Printf(">Created cache file %s\n", path)
 	}
 
 	defer wg.Done()
@@ -140,6 +153,8 @@ func init() {
 	flag.StringVar(&date, "d", time.Now().Format(dateFormat), "Date format: dd.mm.yyy")
 	flag.StringVar(&lang, "l", "en", "Language: {en|md|ro|ru}")
 	flag.Var(&currencies, "c", "Comma separated list of currencies to display")
+	flag.BoolVar(&verbose, "v", false, "Creates verbose output")
+	flag.BoolVar(&fresh, "f", false, "Skip reading cache and fetch fresh data")
 }
 
 func main() {
