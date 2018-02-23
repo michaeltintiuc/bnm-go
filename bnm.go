@@ -19,11 +19,11 @@ const (
 )
 
 var (
-	wg             sync.WaitGroup
-	mu             sync.Mutex
-	date, lang     string
-	verbose, fresh bool
-	currencies     = currencySlice{"USD"}
+	wg                   sync.WaitGroup
+	mu                   sync.Mutex
+	date, lang           string
+	verbose, fresh, help bool
+	currencies           = currencySlice{"USD"}
 )
 
 type currencySlice []string
@@ -153,13 +153,19 @@ func init() {
 	flag.StringVar(&date, "d", time.Now().Format(dateFormat), "Date format: dd.mm.yyy")
 	flag.StringVar(&lang, "l", "en", "Language: {en|md|ro|ru}")
 	flag.Var(&currencies, "c", "Comma separated list of currencies to display")
-	flag.BoolVar(&verbose, "v", false, "Creates verbose output")
+	flag.BoolVar(&verbose, "v", false, "Display verbose output")
 	flag.BoolVar(&fresh, "f", false, "Skip reading cache and fetch fresh data")
+	flag.BoolVar(&help, "h", false, "Print usage")
 }
 
 func main() {
 	flag.Parse()
 	validateFlags()
+
+	if help {
+		flag.PrintDefaults()
+		os.Exit(0)
+	}
 
 	xml, _ := getXML()
 	rates, _ := parseXML(xml)
