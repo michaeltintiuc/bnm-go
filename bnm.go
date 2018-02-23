@@ -157,10 +157,15 @@ func validateFlags() {
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
+
+	switch strings.ToLower(date) {
+	case "yesterday", "yday", "yd", "yda":
+		date = time.Now().AddDate(0, 0, -1).Format(dateFormat)
+	}
 }
 
 func init() {
-	flag.StringVar(&date, "d", time.Now().Format(dateFormat), "Date format: dd.mm.yyy")
+	flag.StringVar(&date, "d", time.Now().Format(dateFormat), "Date format: {dd.mm.yyy} or {yesterday|yday|yd|yda}")
 	flag.StringVar(&lang, "l", "en", "Language: {en|md|ro|ru}")
 	flag.Var(&currencies, "c", "Comma separated list of currencies to display")
 	flag.BoolVar(&verbose, "v", false, "Display verbose output")
