@@ -38,11 +38,21 @@ func (c *currencySlice) Contains(needle string) bool {
 }
 
 func (c *currencySlice) Set(value string) error {
-	for _, currency := range strings.Split(value, ",") {
-		if currency != "" {
-			*c = append(*c, strings.ToUpper(currency))
+OUTER:
+	for _, currency := range strings.Split(strings.ToUpper(value), ",") {
+		if currency == "" {
+			continue
 		}
+
+		for _, existing := range *c {
+			if currency == existing {
+				continue OUTER
+			}
+		}
+
+		*c = append(*c, currency)
 	}
+
 	return nil
 }
 
