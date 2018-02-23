@@ -22,8 +22,10 @@ var (
 	wg                   sync.WaitGroup
 	mu                   sync.Mutex
 	date, lang           string
+	buy, sell            float64
 	verbose, fresh, help bool
 	currencies           = currencySlice{"USD"}
+	ratesUsed            = []Rate{}
 )
 
 type currencySlice []string
@@ -60,14 +62,17 @@ func (c *currencySlice) String() string {
 	return fmt.Sprint(*c)
 }
 
-// Rates maps XML structure
+// Rates parent node of base XML structure
 type Rates struct {
-	Rates []struct {
-		NumCode  string  `xml:"NumCode"`
-		CharCode string  `xml:"CharCode"`
-		Name     string  `xml:"Name"`
-		Value    float32 `xml:"Value"`
-	} `xml:"Valute"`
+	Rates []Rate `xml:"Valute"`
+}
+
+// Rate child node of Rates
+type Rate struct {
+	NumCode  string  `xml:"NumCode"`
+	CharCode string  `xml:"CharCode"`
+	Name     string  `xml:"Name"`
+	Value    float64 `xml:"Value"`
 }
 
 func buildURL() string {
@@ -162,11 +167,40 @@ func validateFlags() {
 	case "yesterday", "yday", "yd", "yda":
 		date = time.Now().AddDate(0, 0, -1).Format(dateFormat)
 	}
+
+	if buy < 0 || sell < 0 {
+		fmt.Fprintf(os.Stderr, "Negative numbers are not supported\n")
+		flag.PrintDefaults()
+		os.Exit(1)
+	}
+}
+
+func printCurrentRates() {
+	fmt.Printf("Rates for %s:\n", date)
+	for _, r := range ratesUsed {
+		fmt.Printf("%s %f (%s)\n", r.CharCode, r.Value, r.Name)
+	}
+}
+
+func printBuyRates() {
+	fmt.Println("\nBuy rates:")
+	for _, r := range ratesUsed {
+		fmt.Printf("%.4f MDL = %.4f %s (%s)\n", buy, buy/r.Value, r.CharCode, r.Name)
+	}
+}
+
+func printSellRates() {
+	fmt.Println("\nSell rates:")
+	for _, r := range ratesUsed {
+		fmt.Printf("%.4f %s (%s) = %.4f MDL\n", sell, r.CharCode, r.Name, r.Value*sell)
+	}
 }
 
 func init() {
 	flag.StringVar(&date, "d", time.Now().Format(dateFormat), "Date format: {dd.mm.yyy} or {yesterday|yday|yd|yda}")
 	flag.StringVar(&lang, "l", "en", "Language: {en|md|ro|ru}")
+	flag.Float64Var(&buy, "buy", 0, "Calculate amount of MDL for each -c (currencies) bought")
+	flag.Float64Var(&sell, "sell", 0, "Calculate amount of MDL for each -c (currencies) sold")
 	flag.Var(&currencies, "c", "Comma separated list of currencies to display")
 	flag.BoolVar(&verbose, "v", false, "Display verbose output")
 	flag.BoolVar(&fresh, "f", false, "Skip reading cache and fetch fresh data")
@@ -187,7 +221,17 @@ func main() {
 
 	for _, r := range rates.Rates {
 		if currencies.Contains(r.CharCode) {
-			fmt.Println(r.CharCode, r.Value)
+			ratesUsed = append(ratesUsed, r)
 		}
+	}
+
+	printCurrentRates()
+
+	if buy > 0 {
+		printBuyRates()
+	}
+
+	if sell > 0 {
+		printSellRates()
 	}
 }
