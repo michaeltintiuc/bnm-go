@@ -18,6 +18,7 @@ const (
 	dateFormat string = "02.01.2006"
 	clrR       string = "\x1b[31;1m"
 	clrG       string = "\x1b[32;1m"
+	clrB       string = "\x1b[34;1m"
 	clrN       string = "\x1b[0m"
 )
 
@@ -184,13 +185,15 @@ func printCurrentRates() {
 	fmt.Printf("Rates for %s:\n", date)
 
 	for _, r := range ratesUsed {
-		clr := clrG
+		clr := clrB
 
 		if compare {
 			for _, p := range ratesPast {
 				if r.CharCode == p.CharCode {
 					if r.Value < p.Value {
 						clr = clrR
+					} else if r.Value > p.Value {
+						clr = clrG
 					}
 					break
 				}
