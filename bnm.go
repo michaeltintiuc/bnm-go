@@ -185,9 +185,9 @@ func printCurrentRates() {
 	fmt.Printf("Rates for %s:\n", date)
 
 	for _, r := range ratesUsed {
-		clr := clrB
-
 		if compare {
+			clr := clrB
+
 			for _, p := range ratesPast {
 				if r.CharCode == p.CharCode {
 					if r.Value < p.Value {
@@ -198,9 +198,10 @@ func printCurrentRates() {
 					break
 				}
 			}
+			fmt.Printf("%s%s %f (%s)%s\n", clr, r.CharCode, r.Value, r.Name, clrN)
+		} else {
+			fmt.Printf("%s %f (%s)\n", r.CharCode, r.Value, r.Name)
 		}
-
-		fmt.Printf("%s%s %f (%s)%s\n", clr, r.CharCode, r.Value, r.Name, clrN)
 	}
 }
 
