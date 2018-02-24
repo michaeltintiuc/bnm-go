@@ -5,6 +5,8 @@ a CLI tool for fetching official currency rates from the [National Bank of Moldo
 
 `go get github.com/michaeltintiuc/bnm-go`
 
+![bnm-go preview](/preview.gif?raw=true "bnm-go preview")
+
 ## Usage
 
 `bnm-go -h`
