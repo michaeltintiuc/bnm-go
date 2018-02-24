@@ -44,6 +44,10 @@ Fetch USD and EUR rates for _today_
 
 `bnm-go -c=usd,eur`
 
+Alternate way of setting currencies
+
+`bnm-go -c=eur -c=cad -c=nzd`
+
 Fetch USD and EUR rates for yesterday
 
 `bnm-go -c=usd,eur -d=yd`

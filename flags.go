@@ -13,7 +13,7 @@ var (
 	buy, sell      float64
 	verbose, fresh bool
 	help, compare  bool
-	currencies     = currencySlice{"USD"}
+	currencies     currencySlice
 )
 
 func validateFlags() {
@@ -35,6 +35,10 @@ func validateFlags() {
 		fmt.Fprintf(os.Stderr, "Negative numbers are not supported\n")
 		flag.PrintDefaults()
 		os.Exit(1)
+	}
+
+	if len(currencies) == 0 {
+		currencies = append(currencies, "USD")
 	}
 }
 
