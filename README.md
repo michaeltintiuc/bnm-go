@@ -8,4 +8,4 @@ Fetch official currency rates from the National Bank of Moldova
 - [ ] Tests
 - [ ] Docs
 - [ ] A better README
-- [ ] Cross reference rates from prior date for drop/rise (red/green) display
+- [X] Cross reference rates from prior date for drop/rise (red/green) display

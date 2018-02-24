@@ -16,16 +16,21 @@ const (
 	domain     string = "http://bnm.md/"
 	endpoint   string = "/official_exchange_rates?get_xml=1&date="
 	dateFormat string = "02.01.2006"
+	clrR       string = "\x1b[31;1m"
+	clrG       string = "\x1b[32;1m"
+	clrN       string = "\x1b[0m"
 )
 
 var (
-	wg                   sync.WaitGroup
-	mu                   sync.Mutex
-	date, lang           string
-	buy, sell            float64
-	verbose, fresh, help bool
-	currencies           = currencySlice{"USD"}
-	ratesUsed            = []Rate{}
+	wg             sync.WaitGroup
+	mu             sync.Mutex
+	date, lang     string
+	buy, sell      float64
+	verbose, fresh bool
+	help, compare  bool
+	currencies     = currencySlice{"USD"}
+	ratesUsed      = []Rate{}
+	ratesPast      = []Rate{}
 )
 
 type currencySlice []string
@@ -177,8 +182,22 @@ func validateFlags() {
 
 func printCurrentRates() {
 	fmt.Printf("Rates for %s:\n", date)
+
 	for _, r := range ratesUsed {
-		fmt.Printf("%s %f (%s)\n", r.CharCode, r.Value, r.Name)
+		clr := clrG
+
+		if compare {
+			for _, p := range ratesPast {
+				if r.CharCode == p.CharCode {
+					if r.Value < p.Value {
+						clr = clrR
+					}
+					break
+				}
+			}
+		}
+
+		fmt.Printf("%s%s %f (%s)%s\n", clr, r.CharCode, r.Value, r.Name, clrN)
 	}
 }
 
@@ -196,6 +215,29 @@ func printSellRates() {
 	}
 }
 
+func getRates(past bool) {
+	xml, _ := getXML()
+	rates, _ := parseXML(xml)
+
+	for _, r := range rates.Rates {
+		if currencies.Contains(r.CharCode) {
+			if past {
+				ratesPast = append(ratesPast, r)
+			} else {
+				ratesUsed = append(ratesUsed, r)
+			}
+		}
+	}
+}
+
+func getPastRates() {
+	dateTime, _ := time.Parse(dateFormat, date)
+	dateBak := date
+	date = dateTime.AddDate(0, 0, -1).Format(dateFormat)
+	getRates(true)
+	date = dateBak
+}
+
 func init() {
 	flag.StringVar(&date, "d", time.Now().Format(dateFormat), "Date format: {dd.mm.yyy} or {yesterday|yday|yd|yda}")
 	flag.StringVar(&lang, "l", "en", "Language: {en|md|ro|ru}")
@@ -205,6 +247,7 @@ func init() {
 	flag.BoolVar(&verbose, "v", false, "Display verbose output")
 	flag.BoolVar(&fresh, "f", false, "Skip reading cache and fetch fresh data")
 	flag.BoolVar(&help, "h", false, "Print usage")
+	flag.BoolVar(&compare, "x", false, "Cross reference rates to the day before -d")
 }
 
 func main() {
@@ -216,13 +259,10 @@ func main() {
 		os.Exit(0)
 	}
 
-	xml, _ := getXML()
-	rates, _ := parseXML(xml)
+	getRates(false)
 
-	for _, r := range rates.Rates {
-		if currencies.Contains(r.CharCode) {
-			ratesUsed = append(ratesUsed, r)
-		}
+	if compare {
+		getPastRates()
 	}
 
 	printCurrentRates()
