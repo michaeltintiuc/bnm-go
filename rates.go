@@ -16,7 +16,7 @@ type Rates struct {
 
 // Rate child node of Rates
 type Rate struct {
-	NumCode  string  `xml:"NumCode"`
+	NumCode  int16   `xml:"NumCode"`
 	CharCode string  `xml:"CharCode"`
 	Name     string  `xml:"Name"`
 	Value    float64 `xml:"Value"`
