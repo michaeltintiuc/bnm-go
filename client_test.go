@@ -1,8 +1,22 @@
 package main
 
 import (
+	"net/http"
 	"testing"
 )
+
+func TestPingURL(t *testing.T) {
+	res, err := http.Get(buildURL())
+	defer res.Body.Close()
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if res.StatusCode != 200 {
+		t.Fatalf("Expected 200 OK response, received %s", res.Status)
+	}
+}
 
 func Test_fetchURL(t *testing.T) {
 	xml, err := fetchURL(buildURL())
@@ -42,7 +56,7 @@ func Test_parseXML(t *testing.T) {
 	}
 
 	if len(r.Rates) != 2 {
-		t.Fatal("Expected 2 rates")
+		t.Fatalf("Expected 2 rates, received %d", len(r.Rates))
 	}
 
 	for _, r := range r.Rates {
