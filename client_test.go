@@ -8,12 +8,11 @@ func Test_fetchURL(t *testing.T) {
 	xml, err := fetchURL(buildURL())
 
 	if err != nil {
-		t.Error(err)
-		return
+		t.Fatal(err)
 	}
 
 	if len(xml) == 0 {
-		t.Error("Empty response")
+		t.Fatal("Empty response")
 	}
 }
 
@@ -39,31 +38,25 @@ func Test_parseXML(t *testing.T) {
 	r, err := parseXML([]byte(xml))
 
 	if err != nil {
-		t.Error(err)
-		return
+		t.Fatal(err)
 	}
 
 	if len(r.Rates) != 2 {
-		t.Error("Expected 2 rates")
-		return
+		t.Fatal("Expected 2 rates")
 	}
 
 	for _, r := range r.Rates {
 		if r.CharCode == "" {
-			t.Error("Empty value")
-			return
+			t.Fatal("Empty CharCode value")
 		}
 		if r.Name == "" {
-			t.Error("Empty value")
-			return
+			t.Fatal("Empty Name value")
 		}
 		if r.NumCode == 0 {
-			t.Error("Empty value")
-			return
+			t.Fatal("Empty NumCode value")
 		}
 		if r.Value == 0 {
-			t.Error("Empty value")
-			return
+			t.Fatal("Empty Value value")
 		}
 	}
 }
