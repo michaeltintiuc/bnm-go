@@ -22,9 +22,16 @@ type Rate struct {
 	Value    float64 `xml:"Value"`
 }
 
-func getRates(past bool) {
-	xml, _ := getXML()
-	rates, _ := parseXML(xml)
+func getRates(past bool) error {
+	xml, err := getXML()
+	if err != nil {
+		return err
+	}
+
+	rates, err := parseXML(xml)
+	if err != nil {
+		return err
+	}
 
 	for _, r := range rates.Rates {
 		if currencies.Contains(r.CharCode) {
@@ -35,12 +42,16 @@ func getRates(past bool) {
 			}
 		}
 	}
+
+	return nil
 }
 
-func getPastRates() {
+func getPastRates() error {
 	dateTime, _ := time.Parse(dateFormat, date)
 	dateBak := date
 	date = dateTime.AddDate(0, 0, -1).Format(dateFormat)
-	getRates(true)
+	err := getRates(true)
 	date = dateBak
+
+	return err
 }

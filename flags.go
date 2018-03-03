@@ -1,9 +1,9 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
-	"os"
 	"strings"
 	"time"
 )
@@ -16,41 +16,47 @@ var (
 	currencies     currencySlice
 )
 
-func validateFlags() {
+func validateFlags() error {
+	// Language validation
 	lang = strings.ToLower(lang)
 	switch lang {
 	case "en", "ru", "ro", "md":
 	default:
-		fmt.Fprintf(os.Stderr, "Invalid language \"%s\" provided\n", lang)
-		flag.PrintDefaults()
-		os.Exit(1)
+		return errors.New("Invalid language \"" + lang + "\" provided")
 	}
 
+	// Date validation
 	switch strings.ToLower(date) {
 	case "yesterday", "yday", "yd", "yda":
 		date = time.Now().AddDate(0, 0, -1).Format(dateFormat)
 	}
 
+	// Buy,Sell validation
 	if buy < 0 || sell < 0 {
-		fmt.Fprintf(os.Stderr, "Negative numbers are not supported\n")
-		flag.PrintDefaults()
-		os.Exit(1)
+		return errors.New("Negative numbers are not supported")
 	}
 
+	// Set default currency
 	if len(currencies) == 0 {
 		currencies = append(currencies, "USD")
 	}
+
+	return nil
 }
 
-func parseFlags() {
+func parseFlags() error {
 	flag.Parse()
+	err := validateFlags()
 
-	validateFlags()
-
-	if help {
-		flag.PrintDefaults()
-		os.Exit(0)
+	if err != nil {
+		fmt.Println(err)
 	}
+
+	return err
+}
+
+func printDefaults() {
+	flag.PrintDefaults()
 }
 
 func init() {

@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -74,6 +75,10 @@ func fetchURL(url string) ([]byte, error) {
 
 	if err != nil {
 		return []byte{}, err
+	}
+
+	if res.StatusCode != 200 {
+		return []byte{}, errors.New("Unexpected respose " + res.Status)
 	}
 
 	defer res.Body.Close()

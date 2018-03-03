@@ -7,11 +7,19 @@ const (
 )
 
 func main() {
-	parseFlags()
-	getRates(false)
+	if err := parseFlags(); err != nil || help {
+		printDefaults()
+		return
+	}
+
+	if err := getRates(false); err != nil {
+		return
+	}
 
 	if compare {
-		getPastRates()
+		if err := getPastRates(); err != nil {
+			return
+		}
 	}
 
 	printCurrentRates()
