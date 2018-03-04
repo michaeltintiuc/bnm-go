@@ -4,7 +4,17 @@ import (
 	"testing"
 )
 
+func Test_getRatesFresh(t *testing.T) {
+	verbose, fresh = true, true
+	err := getRates(false)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
 func Test_getRates(t *testing.T) {
+	verbose, fresh = true, false
 	err := getRates(false)
 
 	if err != nil {
