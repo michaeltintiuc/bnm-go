@@ -1,5 +1,6 @@
 # bnm-go
 [![Build Status](https://travis-ci.org/michaeltintiuc/bnm-go.svg?branch=master)](https://travis-ci.org/michaeltintiuc/bnm-go)
+[![Go Report Card](https://goreportcard.com/badge/github.com/michaeltintiuc/bnm-go)](https://goreportcard.com/report/github.com/michaeltintiuc/bnm-go)
 
 a CLI tool for fetching official currency rates from the [National Bank of Moldova](https://bnm.md/)
 
