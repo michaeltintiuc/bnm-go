@@ -26,8 +26,20 @@ func Test_fetchURL(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if len(xml) == 0 {
+	if xml == nil || len(xml) == 0 {
 		t.Fatal("Empty response")
+	}
+}
+
+func Test_fetchURL_404(t *testing.T) {
+	xml, err := fetchURL(domain + "/foobar")
+
+	if err == nil {
+		t.Fatal("Expected error")
+	}
+
+	if len(xml) > 0 {
+		t.Fatal("Expected empy result")
 	}
 }
 
@@ -73,5 +85,13 @@ func Test_parseXML(t *testing.T) {
 		if r.Value == 0 {
 			t.Fatal("Empty Value value")
 		}
+	}
+}
+
+func Test_parseXML_empty(t *testing.T) {
+	r, _ := parseXML([]byte{})
+
+	if r.Rates != nil {
+		t.Fatal("Expected error")
 	}
 }
