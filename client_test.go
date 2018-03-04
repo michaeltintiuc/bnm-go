@@ -103,3 +103,11 @@ func Test_parseXML_empty(t *testing.T) {
 		t.Fatal("Expected error")
 	}
 }
+
+func Test_cacheXML_faulty(t *testing.T) {
+	wg.Add(1)
+	if err := cacheXML("/foobar", []byte{}); err == nil {
+		t.Fatal("Expected error")
+	}
+	wg.Wait()
+}

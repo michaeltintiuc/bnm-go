@@ -11,8 +11,9 @@ import (
 )
 
 var (
-	wg sync.WaitGroup
-	mu sync.Mutex
+	cachePrefix = "bnm-go"
+	wg          sync.WaitGroup
+	mu          sync.Mutex
 )
 
 func buildURL() string {
@@ -23,7 +24,7 @@ func buildURL() string {
 // Fetch data from a cache file or
 // Send new request and cache response
 func getXML() ([]byte, error) {
-	tmp := fmt.Sprintf("%s/%s-%s-%s", os.TempDir(), "bnm-go", lang, date)
+	tmp := fmt.Sprintf("%s/%s-%s-%s", os.TempDir(), cachePrefix, lang, date)
 
 	if _, err := os.Stat(tmp); os.IsNotExist(err) || fresh {
 		if verbose {
