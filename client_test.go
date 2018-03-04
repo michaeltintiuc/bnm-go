@@ -43,6 +43,14 @@ func Test_fetchURL_404(t *testing.T) {
 	}
 }
 
+func Test_fetchURL_faulty(t *testing.T) {
+	_, err := fetchURL("foobar")
+
+	if err == nil {
+		t.Fatal("Expected error")
+	}
+}
+
 func Test_parseXML(t *testing.T) {
 	const xml = `
 <ValCurs Date="02.01.2006" name="Official exchange rate">
