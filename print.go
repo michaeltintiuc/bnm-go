@@ -4,11 +4,11 @@ import (
 	"fmt"
 )
 
-const (
-	clrR string = "\x1b[31;1m"
-	clrG string = "\x1b[32;1m"
-	clrB string = "\x1b[34;1m"
-	clrN string = "\x1b[0m"
+var (
+	clrR = "\x1b[31;1m"
+	clrG = "\x1b[32;1m"
+	clrB = "\x1b[34;1m"
+	clrN = "\x1b[0m"
 )
 
 func printCurrentRates() {
