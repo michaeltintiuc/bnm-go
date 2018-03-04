@@ -50,13 +50,14 @@ func parseFlags() error {
 
 	if err != nil {
 		fmt.Println(err)
+		flag.PrintDefaults()
+	}
+
+	if help {
+		flag.PrintDefaults()
 	}
 
 	return err
-}
-
-func printDefaults() {
-	flag.PrintDefaults()
 }
 
 func init() {

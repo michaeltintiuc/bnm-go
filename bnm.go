@@ -8,7 +8,6 @@ const (
 
 func main() {
 	if err := parseFlags(); err != nil || help {
-		printDefaults()
 		return
 	}
 
