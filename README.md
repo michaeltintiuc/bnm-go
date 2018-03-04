@@ -79,5 +79,5 @@ Calculate amount of USD and EUR received for 100 MDL
 - [X] Argument parsing (date, currency)
 - [X] Currency conversion
 - [X] Cross reference rates from prior date for drop/rise (red/green) display
-- [ ] Tests
+- [X] Tests
 - [ ] Docs
