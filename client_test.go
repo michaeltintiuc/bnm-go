@@ -7,11 +7,12 @@ import (
 
 func TestPingURL(t *testing.T) {
 	res, err := http.Get(buildURL())
-	defer res.Body.Close()
 
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	defer res.Body.Close()
 
 	if res.StatusCode != 200 {
 		t.Fatalf("Expected 200 OK response, received %s", res.Status)
