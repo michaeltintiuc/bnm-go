@@ -61,7 +61,7 @@ func parseFlags() error {
 }
 
 func init() {
-	flag.StringVar(&date, "d", time.Now().Format(dateFormat), "Date format: {dd.mm.yyy} or {yesterday|yday|yd|yda}")
+	flag.StringVar(&date, "d", time.Now().Format(dateFormat), "Date format: {dd.mm.yyyy} or {yesterday|yday|yd|yda}")
 	flag.StringVar(&lang, "l", "en", "Language: {en|md|ro|ru}")
 	flag.Float64Var(&buy, "buy", 0, "Calculate amount of MDL for each -c (currencies) bought")
 	flag.Float64Var(&sell, "sell", 0, "Calculate amount of MDL for each -c (currencies) sold")
